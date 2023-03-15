@@ -5,7 +5,7 @@ let tileSize;
 let mazeColumns;
 let mazeRows;
 let gameTimeStart;
-let gameTimeLimit = 80;
+let gameTimeLimit = 88;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
