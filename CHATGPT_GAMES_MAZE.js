@@ -1,157 +1,3 @@
-working maze code from chatgpt : 
-
-html : 
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Maze Runner Game</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
-  <script src="sketch.js"></script>
-</head>
-<body>
-</body>
-</html>
-
-
-javascript: without scale and touch function
-
-// sketch.js - Version 1.5.0
-let maze, player, tileSize = 40, mazeColumns, mazeRows, gameState = "playing", countdownStart, countdownDuration = 5, gameTimeStart, gameTimeLimit = 90;
-
-function setup() {
-  createCanvas(windowWidth, windowHeight);
-  mazeColumns = 20 * Math.floor(width / tileSize);
-  mazeRows = 20 * Math.floor(height / tileSize);
-  maze = new Maze(mazeColumns, mazeRows, tileSize);
-  player = new Player();
-  gameTimeStart = millis();
-}
-
-function draw() {
-  background(255);
-  if (gameState === "playing") {
-    updateGameTime();
-    if (gameTimeLimit - getElapsedSeconds(gameTimeStart) <= 0) {
-      gameState = "gameOver";
-      countdownStart = millis();
-    } else {
-      maze.update();
-      maze.display();
-      player.display(width / 2, height / 2);
-      displayDistanceToGoal();
-      displayGameTime();
-      if (player.collidesWithGoal(maze.goal)) {
-        gameState = "won";
-        countdownStart = millis();
-      }
-    }
-  } else if (gameState === "won") {
-    displayVictoryMessage();
-    if (millis() - countdownStart >= countdownDuration * 1000) {
-      gameState = "playing";
-      maze.generateLayout();
-      maze.generateGoal();
-      gameTimeStart = millis();
-    }
-  } else if (gameState === "gameOver") {
-    maze.collapse();
-    maze.display();
-    displayGameOverMessage();
-    if (millis() - countdownStart >= countdownDuration * 1000) {
-      gameState = "playing";
-      maze.generateLayout();
-      maze.generateGoal();
-      gameTimeStart = millis();
-    }
-  }
-}
-
-function displayVictoryMessage() {
-  textAlign(CENTER, CENTER);
-  textSize(48);
-  fill(0);
-  text("You won!", width / 2, height / 2);
-}
-
-function displayGameOverMessage() {
-  textAlign(CENTER, CENTER);
-  textSize(48);
-  fill(0);
-  text("Game over :{", width / 2, height / 2);
-  textSize(24);
-  text("Restarting in " + (5 - Math.floor((millis() - countdownStart) / 1000)) + " seconds", width / 2, height / 2 + 50);
-}
-
-function displayDistanceToGoal() {
-  let playerGridPos = player.getGridPosition(maze.offsetX, maze.offsetY);
-  let goalGridPos = createVector(maze.goal.x / tileSize, maze.goal.y / tileSize);
-  let distance = playerGridPos.dist(goalGridPos);
-  let maxDistance = sqrt(sq(mazeColumns) + sq(mazeRows));
-  let progress = map(distance, 0, maxDistance, 100, 0);
-  let colorProgress = map(progress, 0, 100, 0, 255);
-
-  textAlign(CENTER, TOP);
-  textSize(24);
-  fill(0, 0, 255 - colorProgress, colorProgress);
-  text("Distance to Goal: " + progress.toFixed(2), width / 1.2 - 60, 10);
-}
-
-function displayGameTime() {
-  textAlign(CENTER, TOP);
-  textSize(24);
-  fill(0);
-  text("Time: " + (gameTimeLimit - getElapsedSeconds(gameTimeStart)), width / 2 + 60, 10);
-}
-
-
-function updateGameTime() {
-  if (gameTimeLimit - getElapsedSeconds(gameTimeStart) < 0) {
-    gameTimeStart = millis();
-  }
-}
-
-function getElapsedSeconds(startTime) {
-  return Math.floor((millis() - startTime) / 1000);
-}
-
-class Maze {
-  constructor(columns, rows, tileSize) {
-    this.columns = columns;
-    this.rows = rows;
-    this.tileSize = tileSize;
-    this.offsetX = 0;
-    this.offsetY = 0;
-    this.generateLayout();
-    this.generateGoal();
-  }
-
-  update() {
-    let prevOffsetX = this.offsetX;
-    let prevOffsetY = this.offsetY;
-    this.offsetX += (mouseX - width / 2) * 0.05;
-    this.offsetY += (mouseY - height / 2) * 0.05;
-    if (player.collidesWithWall(this.layout, this.columns, this.rows)) {
-      this.offsetX = prevOffsetX;
-      this.offsetY = prevOffsetY;
-    }
-  }
-
-  generateLayout() {
-    this.layout = [];
-    for (let y = 0; y < this.rows; y++) {
-      let row = [];
-      for (let x = 0; x < this.columns; x++) {
-        if (x === 0 || x === this.columns - 1 || y === 0 || y === this.rows - 1) {
-          row.push(1);
-        } else {
-          row.push(Math.random() < 0.2 ? 1 : 0);
-        }
-      }
-      this.layout.push(row);
-    }
-
 // sketch.js - Version 1.5.0
 let maze;
 let player;
@@ -233,16 +79,16 @@ function displayDistanceToGoal() {
   let colorProgress = map(progress, 0, 100, 0, 255);
 
   textAlign(CENTER, TOP);
-  textSize(24);
+  textSize(min(windowWidth, windowHeight) * 0.03);
   fill(0, 0, 255 - colorProgress, colorProgress);
   text("Distance to Goal: " + progress.toFixed(2), width / 1.2 - 60, 10);
 }
 
 function displayGameTime() {
   textAlign(CENTER, TOP);
-  textSize(24);
+  textSize(min(windowWidth, windowHeight) * 0.03);
   fill(0);
-  text("Time: " + (gameTimeLimit - getElapsedSeconds(gameTimeStart)), width / 2 + 60, 10);
+  text("Time: " + (gameTimeLimit - getElapsedSeconds(gameTimeStart)), width / 2.6 + 60, 10);
 }
 
 
