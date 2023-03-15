@@ -1,11 +1,11 @@
-// sketch.js - Version 1.5.0
+// sketch.js - Version 1.6.0
 let maze;
 let player;
 let tileSize;
 let mazeColumns;
 let mazeRows;
 let gameTimeStart;
-let gameTimeLimit = 90;
+let gameTimeLimit = 80;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -26,20 +26,22 @@ function draw() {
   displayGameTime();
 
   if (player.collidesWithGoal(maze.goal)) {
-    textAlign(CENTER, CENTER);
-    textSize(48);
-    fill(0);
-    text("You won!", width / 2, height / 2);
+    displayVictoryMessage();
     noLoop();
     setTimeout(() => {
-      maze = new Maze(mazeColumns, mazeRows, tileSize);
-      loop();
+      resetGame();
+    }, 5000);
+  } else if (gameTimeLimit - getElapsedSeconds(gameTimeStart) <= 0) {
+    displayGameOverMessage();
+    noLoop();
+    setTimeout(() => {
+      resetGame();
     }, 5000);
   }
-
 }
 
-function touchMoved(event) {
+
+function touchDragged(event) {
   event.preventDefault();
   mouseX = event.touches[0].clientX;
   mouseY = event.touches[0].clientY;
@@ -67,8 +69,17 @@ function displayGameOverMessage() {
   fill(0);
   text("Game over :{", width / 2, height / 2);
   textSize(24);
-  text("Restarting in " + (5 - Math.floor((millis() - countdownStart) / 1000)) + " seconds", width / 2, height / 2 + 50);
+  text("Restarting in " + (5 - Math.floor((millis() - gameTimeStart) / 1000 - gameTimeLimit)) + " seconds", width / 2, height / 2 + 50);
 }
+
+
+
+function resetGame() {
+  maze = new Maze(mazeColumns, mazeRows, tileSize);
+  gameTimeStart = millis();
+  loop();
+}
+
 
 function displayDistanceToGoal() {
   let playerGridPos = player.getGridPosition(maze.offsetX, maze.offsetY);
@@ -124,20 +135,25 @@ class Maze {
     }
   }
 
-  generateLayout() {
-    this.layout = [];
-    for (let y = 0; y < this.rows; y++) {
-      let row = [];
-      for (let x = 0; x < this.columns; x++) {
-        if (x === 0 || x === this.columns - 1 || y === 0 || y === this.rows - 1) {
-          row.push(1);
-        } else {
-          row.push(Math.random() < 0.2 ? 1 : 0);
-        }
+generateLayout() {
+  this.layout = [];
+  let centerX = Math.floor(this.columns / 2);
+  let centerY = Math.floor(this.rows / 2);
+  
+  for (let y = 0; y < this.rows; y++) {
+    let row = [];
+    for (let x = 0; x < this.columns; x++) {
+      if (x === 0 || x === this.columns - 1 || y === 0 || y === this.rows - 1) {
+        row.push(1);
+      } else if (abs(x - centerX) < 2 && abs(y - centerY) < 2) {
+        row.push(0);
+      } else {
+        row.push(Math.random() < 0.2 ? 1 : 0);
       }
-      this.layout.push(row);
     }
+    this.layout.push(row);
   }
+}
 
   generateGoal() {
     let goalX, goalY;
